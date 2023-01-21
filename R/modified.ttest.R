@@ -65,6 +65,63 @@ function(x, y, coords, nclass = 13)
   return(o)
 }
 
+get_imoran <- function(x, y, coords, nclass=13) {
+    ## validating arguments
+  if (length(x) != length(y))
+    stop("'x' and 'y' must have the same length")
+  if (!is.numeric(x)) stop("'x' must be a numeric vector")
+  if (!is.numeric(y)) stop("'y' must be a numeric vector")
+  ## in order to remove all NAs
+  OK <- complete.cases(x, y)
+  x <- x[OK]
+  y <- y[OK]
+  n <- length(x)
+  corr <- cor(cbind(x, y))
+  dnames <- colnames(corr)
+  corr <- corr[2,1]
+
+  ## extract coordinates, is assumed that the variables are in the appropiate order
+  coords <- as.matrix(coords)
+  coords <- coords[OK,]
+  p <- ncol(coords)
+  if (p < 2) stop("'coords' must be a matrix with two columns")
+  if (p > 2) warning("only the first two columns of 'coords' are considered")
+  p <- 2 # only implemented for this case!
+  xpos <- coords[,1]
+  ypos <- coords[,2]
+
+  ## some definitions
+  ndist  <- n * (n - 1) / 2
+  if (is.null(nclass))
+    nclass <- as.integer(1.5 + 3.3 * log10(ndist))
+
+    ## call routine
+  now <- proc.time()
+  z <- .C("moran_i_2",
+          x = as.double(x),
+          y = as.double(y),
+          n = as.integer(n),
+          nclass = as.integer(nclass),
+          xpos = as.double(xpos),
+          ypos = as.double(ypos),
+          upper.bounds = double(nclass),
+          card = double(nclass),
+          index = double(nclass * p))
+  speed <- proc.time() - now
+  ## creating output object
+
+  o <- list()
+  o$upper.bounds <- z$upper.bounds
+  o$card <- z$card
+  o$imoran <- matrix(z$index, ncol = p)
+  colnames(o$imoran) <- dnames
+  o$imoran <- as.data.frame(o$imoran)
+  o$data.names <- dnames
+  o$speed <- speed
+
+  return(o)
+}
+
 print.mod.ttest <- function(x, digits = 4, ...)
 {
   cat("\n")

@@ -51,18 +51,51 @@ MoranI(double *x, double *y, DIMS dims, double *xpos, double *ypos, double *uppe
   double *card, double *index)
 { /* Moran's I */
   int pos;
-  double dx, dy, distance, dummy, sx, sy, xbar, xvar, ybar, yvar, wts;
+  double dx, dy, distance, dummy, sx[dims->nclass], sy[dims->nclass], xbar, xvar, ybar, yvar, wts[dims->nclass];
 
   online_covariance(x, y, dims->n, &xbar, &ybar, &xvar, &yvar, &dummy);
 
   for (int k = 0; k < dims->nclass; k++) {
+    sx[k] = sy[k] = wts[k] = 0.0;
+  }
+  // sx = sy = wts = 0.0;
+  for (int j = 0; j < dims->n; j++) {
+    for (int i = j + 1; i < dims->n; i++) {
+      dx = (xpos[i] - xpos[j]);
+      dy = (ypos[i] - ypos[j]);
+      distance = hypot(dx, dy);
+      pos = find_interval(upper_bounds, dims->nclass, distance);
+      // if (pos == k) {
+      wts[pos]++;
+      sx[pos] += (x[i] - xbar) * (x[j] - xbar);
+      sy[pos] += (y[i] - ybar) * (y[j] - ybar);
+      // }
+    }
+  }
+  for (int k = 0; k < dims->nclass; k++) {
+    index[k] = (sx[k] / wts[k]) / xvar;
+    index[k + dims->nclass] = (sy[k] / wts[k]) / yvar;
+    card[k] = wts[k];
+  }
+}
+
+void
+moran_i_2(double *x, double *y, int *n, int *nclass, double *xpos, double *ypos, double *upper_bounds,
+  double *card, double *index)
+{ /* Moran's I */
+  int pos;
+  double dx, dy, distance, dummy, sx, sy, xbar, xvar, ybar, yvar, wts;
+
+  online_covariance(x, y, *n, &xbar, &ybar, &xvar, &yvar, &dummy);
+
+  for (int k = 0; k < *nclass; k++) {
     sx = sy = wts = 0.0;
-    for (int j = 0; j < dims->n; j++) {
-      for (int i = j + 1; i < dims->n; i++) {
+    for (int j = 0; j < *n; j++) {
+      for (int i = j + 1; i < *n; i++) {
         dx = (xpos[i] - xpos[j]);
         dy = (ypos[i] - ypos[j]);
         distance = hypot(dx, dy);
-        pos = find_interval(upper_bounds, dims->nclass, distance);
+        pos = find_interval(upper_bounds, *nclass, distance);
         if (pos == k) {
           wts++;
           sx += (x[i] - xbar) * (x[j] - xbar);
@@ -71,7 +104,7 @@ MoranI(double *x, double *y, DIMS dims, double *xpos, double *ypos, double *uppe
       }
     }
     index[k] = (sx / wts) / xvar;
-    index[k + dims->nclass] = (sy / wts) / yvar;
+    index[k + *nclass] = (sy / wts) / yvar;
     card[k] = wts;
   }
 }

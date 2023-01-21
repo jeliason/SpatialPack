@@ -11,7 +11,7 @@ importFrom("stats",
 
 ## our exports:
 export(clipping, codisp, cor.spatial, CQ, denoise, imnoise, modified.Ftest, modified.ttest,
-       normalize, RGB2gray, SSIM)
+       normalize, RGB2gray, SSIM, get_imoran)
 
 ## register S3 methods
 S3method(print, codisp)
