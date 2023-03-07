@@ -12,8 +12,6 @@ extern void codisp_coef(double *, double *, double *, double *, int *, double *,
 extern void codisp_direction(double *, double *, int *, int *, int *, double *);
 extern void cor_spatial(double *, double *, double *, double *, double *, double *, double *, int *, double *, double *);
 extern void modified_ttest(double *, double *, double *, double *, int *, double *, double *, double *, double *, double *);
-extern void moran_i_2(double *, double *, int *, int *, double *, double *, double *, double *, double *);
-
 
 /* routines to handle images (utilities, add and remove noise) */
 extern void add_noise(double *, int *, int *, int *, double *, double *);
@@ -39,7 +37,6 @@ static const R_CMethodDef CEntries[]  = {
   CALLDEF(CQ_coef,          8),
   CALLDEF(gamma_noise,      5),
   CALLDEF(modified_ttest,  10),
-  CALLDEF(moran_i_2,         9),
   CALLDEF(normalize_img,    6),
   CALLDEF(RGB2gray_img,     9),
   CALLDEF(saltnpepper,      5),
